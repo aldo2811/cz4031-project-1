@@ -1,5 +1,5 @@
-#CZ4031 Project 1
-##Local Development
+# CZ4031 Project 1
+## Local Development
 1. Clone repository
 2. Change working directory to project directory
 ```
