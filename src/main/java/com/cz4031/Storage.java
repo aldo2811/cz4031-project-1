@@ -1,5 +1,12 @@
 package com.cz4031;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.Arrays;
 import java.util.LinkedList;
 
@@ -17,6 +24,26 @@ public class Storage {
         blocks = new byte[MEMORY_SIZE];
         blockTailIdx = -1;
         emptyRecord = new LinkedList<>();
+    }
+
+    public void initWithTSV(String path) {
+        try {
+            Reader in = new FileReader(path);
+            Iterable<CSVRecord> records = CSVFormat.TDF.builder().setHeader().setSkipHeaderRecord(true).build().parse(in);
+            for (CSVRecord record : records) {
+                createRecord(
+                        record.get("tconst"),
+                        Float.parseFloat(record.get("averageRating")),
+                        Integer.parseInt(record.get("numVotes"))
+                );
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Wrong file path");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Error while reading file");
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -85,6 +112,6 @@ public class Storage {
      * @return a block with given ID
      */
     public byte[] readBlock(int blockID) {
-        return Arrays.copyOfRange(blocks, blockID * BLOCK_SIZE, BLOCK_SIZE);
+        return Arrays.copyOfRange(blocks, blockID * BLOCK_SIZE, blockID * BLOCK_SIZE + BLOCK_SIZE);
     }
 }
