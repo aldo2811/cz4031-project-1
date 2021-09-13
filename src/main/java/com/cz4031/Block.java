@@ -21,11 +21,9 @@ public class Block {
         return new Block(records, blockSize);
     }
 
-    public static Block fromByteArray(byte[] byteArr) {
+    public static Block fromByteArray(byte[] byteArr, int recordSize) {
         ByteBuffer buf = ByteBuffer.wrap(byteArr);
-        // TODO: Move record size
-        int RECORD_SIZE = 19;
-        Block block = Block.empty(byteArr.length, RECORD_SIZE);
+        Block block = Block.empty(byteArr.length, recordSize);
 
         for (int i = 0; i < block.records.length; ++i) {
             boolean empty = buf.get() == 1;
