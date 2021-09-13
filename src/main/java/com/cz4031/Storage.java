@@ -11,14 +11,14 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 public class Storage {
-    final int BLOCK_SIZE = 100;
-    final int RECORD_SIZE = 19;
-    final int NUM_OF_RECORD = BLOCK_SIZE / RECORD_SIZE;
-    final int MEMORY_SIZE = 200 << 20;
+    private final int BLOCK_SIZE = 100;
+    private final int RECORD_SIZE = 19;
+    private final int NUM_OF_RECORD = BLOCK_SIZE / RECORD_SIZE;
+    private final int MEMORY_SIZE = 200 << 20;
 
-    byte[] blocks ;
-    int blockTailIdx;
-    LinkedList<RecordAddress> emptyRecord;
+    private byte[] blocks ;
+    private int blockTailIdx;
+    private LinkedList<RecordAddress> emptyRecord;
 
     public Storage() {
         blocks = new byte[MEMORY_SIZE];
@@ -58,9 +58,9 @@ public class Storage {
         RecordAddress address = emptyRecord.element();
         emptyRecord.remove();
 
-        Block block = Block.fromByteArray(readBlock(address.blockID), RECORD_SIZE);
-        block.updateRecord(address.recordID, tConst, rating, numVotes);
-        updateBlock(address.blockID, block.toByteArray());
+        Block block = Block.fromByteArray(readBlock(address.getBlockID()), RECORD_SIZE);
+        block.updateRecord(address.getRecordID(), tConst, rating, numVotes);
+        updateBlock(address.getBlockID(), block.toByteArray());
 
         return address;
     }
@@ -70,7 +70,7 @@ public class Storage {
      * @param address address of record to get
      */
     public Record readRecord(RecordAddress address) {
-        return Block.fromByteArray(readBlock(address.blockID), RECORD_SIZE).readRecord(address.recordID);
+        return Block.fromByteArray(readBlock(address.getBlockID()), RECORD_SIZE).readRecord(address.getRecordID());
     }
 
     /**
@@ -78,9 +78,9 @@ public class Storage {
      * @param address address of record to be deleted
      */
     public void deleteRecord(RecordAddress address) {
-        Block block = Block.fromByteArray(readBlock(address.blockID), RECORD_SIZE);
-        block.deleteRecord(address.recordID);
-        updateBlock(address.blockID, block.toByteArray());
+        Block block = Block.fromByteArray(readBlock(address.getBlockID()), RECORD_SIZE);
+        block.deleteRecord(address.getRecordID());
+        updateBlock(address.getBlockID(), block.toByteArray());
 
         emptyRecord.add(address);
     }
