@@ -26,23 +26,33 @@ public class Storage {
         emptyRecord = new LinkedList<>();
     }
 
-    public void initWithTSV(String path) {
+    public bplustree initWithTSV(String path) {
+    	
+    	bplustree bpt = new bplustree(3);
         try {
+        	
             Reader in = new FileReader(path);
             Iterable<CSVRecord> records = CSVFormat.TDF.builder().setHeader().setSkipHeaderRecord(true).build().parse(in);
+            
             for (CSVRecord record : records) {
-                createRecord(
+                bpt.insert(Integer.parseInt(record.get("tconst").substring(2),10), createRecord(
                         record.get("tconst"),
                         Float.parseFloat(record.get("averageRating")),
                         Integer.parseInt(record.get("numVotes"))
-                );
+                ));
             }
+            
+            return bpt;
+            
         } catch (FileNotFoundException e) {
             System.out.println("Wrong file path");
             e.printStackTrace();
+            return bpt;
+            
         } catch (IOException e) {
             System.out.println("Error while reading file");
             e.printStackTrace();
+            return bpt;
         }
     }
 
@@ -70,7 +80,11 @@ public class Storage {
      * @param address address of record to get
      */
     public Record readRecord(RecordAddress address) {
-        return Block.fromByteArray(readBlock(address.getBlockID()), RECORD_SIZE).readRecord(address.getRecordID());
+    	if (address == null) {
+    		return null;
+    	}
+    	else
+    		return Block.fromByteArray(readBlock(address.getBlockID()), RECORD_SIZE).readRecord(address.getRecordID());
     }
 
     /**
