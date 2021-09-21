@@ -7,26 +7,26 @@ public class InternalNode extends Node{
 	private int degree; //current number of pointers
 	protected InternalNode leftSibling;
 	protected InternalNode rightSibling;
-	private Integer[] keys;
+	private MultiKey[] keys;
 	private Node[] pointers;
 	
-	public InternalNode(int n, Integer[] keys) {
-		this.maxDegree = n;
+	public InternalNode(int n, MultiKey[] keys) {
+		this.maxDegree = n+1;
 		this.minDegree = (int)Math.floor(n/2.0);
 		this.degree = 0;
 		this.keys = keys;
 		this.pointers = new Node[this.maxDegree+1];
 	}
 
-	public InternalNode(int n, Integer[] keys, Node[] pointers) {
-		this.maxDegree = n;
+	public InternalNode(int n, MultiKey[] keys, Node[] pointers) {
+		this.maxDegree = n+1;
 		this.minDegree = (int)Math.floor(n/2.0);
 		this.degree = getDegree(pointers);
 		this.keys = keys;
 		this.pointers = pointers;
 	}
 	
-	public Integer[] getKeys() {
+	public MultiKey[] getKeys() {
 		return keys;
 	}
 	
@@ -44,7 +44,7 @@ public class InternalNode extends Node{
 	
 	//get degree given an array of pointers.
 	public int getDegree(Node[] pointers) {
-		for (int i = 0; i <  pointers.length; i++) {
+		for (int i = 0; i < pointers.length; i++) {
 			if (pointers[i] == null) { return i; }
 		}
 		return -1;
