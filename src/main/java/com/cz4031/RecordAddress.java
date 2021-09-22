@@ -16,4 +16,9 @@ public class RecordAddress {
     public int getRecordID() {
         return recordID;
     }
+
+    @Override
+    public String toString() {
+        return String.format("(B%d, R%d)", this.blockID, this.recordID);
+    }
 }

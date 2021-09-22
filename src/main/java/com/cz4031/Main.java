@@ -10,15 +10,17 @@ public class Main {
 
         Storage st = new Storage();
 
-        st.initWithTSV("data.tsv");
+        st.initWithTSV("test_data.tsv");
         for(int i = 0 ; i < 5 ; i++) {
             Block b = Block.fromByteArray(st.readBlock(i), 19);
             System.out.println(b);
         }
 
         BPlusTree bpt = st.buildIndex();
-        List<RecordAddress> r = bpt.search(262);
-        bpt.delete(262);
-        List<RecordAddress> rr = bpt.search(262);
+        List<RecordAddress> r = bpt.search(100);
+        System.out.println(r);
+        bpt.delete(100);
+        List<RecordAddress> rr = bpt.search(100);
+        System.out.println(rr);
     }
 }

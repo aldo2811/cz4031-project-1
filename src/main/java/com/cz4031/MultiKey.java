@@ -1,5 +1,7 @@
 package com.cz4031;
 
+import java.util.Arrays;
+
 public class MultiKey implements Comparable<MultiKey> {
     private int k1;
     private char[] k2;
@@ -23,5 +25,13 @@ public class MultiKey implements Comparable<MultiKey> {
             return String.valueOf(k2).compareTo(String.valueOf(m.getK2()));
         }
         return Integer.compare(k1, m.getK1());
+    }
+
+    @Override
+    public String toString() {
+        return "MultiKey{" +
+                "k1=" + k1 +
+                ", k2=" + Arrays.toString(k2) +
+                '}';
     }
 }
