@@ -7,8 +7,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 public class Storage {
     private final int BLOCK_SIZE = 100;
@@ -26,33 +28,25 @@ public class Storage {
         emptyRecord = new LinkedList<>();
     }
 
-    public bplustree initWithTSV(String path) {
-    	
-    	bplustree bpt = new bplustree(3);
+    public void initWithTSV(String path) {
         try {
         	
             Reader in = new FileReader(path);
             Iterable<CSVRecord> records = CSVFormat.TDF.builder().setHeader().setSkipHeaderRecord(true).build().parse(in);
             
             for (CSVRecord record : records) {
-                bpt.insert(Integer.parseInt(record.get("tconst").substring(2),10), createRecord(
+                createRecord(
                         record.get("tconst"),
                         Float.parseFloat(record.get("averageRating")),
                         Integer.parseInt(record.get("numVotes"))
-                ));
+                );
             }
-            
-            return bpt;
-            
         } catch (FileNotFoundException e) {
             System.out.println("Wrong file path");
             e.printStackTrace();
-            return bpt;
-            
         } catch (IOException e) {
             System.out.println("Error while reading file");
             e.printStackTrace();
-            return bpt;
         }
     }
 
@@ -85,6 +79,21 @@ public class Storage {
     	}
     	else
     		return Block.fromByteArray(readBlock(address.getBlockID()), RECORD_SIZE).readRecord(address.getRecordID());
+    }
+
+    public BPlusTree buildIndex() {
+        BPlusTree bpt = new BPlusTree(3);
+        for (int blockID = 0; blockID <= blockTailIdx; ++blockID) {
+            Block block = Block.fromByteArray(readBlock(blockID), RECORD_SIZE);
+            for (int recordID = 0; recordID < NUM_OF_RECORD; ++recordID) {
+                Record record = block.readRecord(recordID);
+                if (!record.isEmpty()) {
+                    MultiKey key = new MultiKey(record.getNumVotes(), record.getTconst());
+                    bpt.insert(key, new RecordAddress(blockID, recordID));
+                }
+            }
+        }
+        return bpt;
     }
 
     /**

@@ -13,16 +13,16 @@ public class LeafNode extends Node{
 	private DictionaryPair[] dictionary;
 	
 	public LeafNode(int n, DictionaryPair dp) {
-		this.maxDegree = n - 1;
-		this.minDegree = (int)(Math.floor(n+1/2));
+		this.maxDegree = n;
+		this.minDegree = (int)(Math.floor((n+1)/2.0));
 		this.degree = 0;
-		this.dictionary = new DictionaryPair[n];
+		this.dictionary = new DictionaryPair[n+1];
 		this.addRecord(dp);
 	}
 	
 	public LeafNode(int n, DictionaryPair[] dp, InternalNode parent) {
-		this.maxDegree = n - 1;
-		this.minDegree = (int)(Math.floor(n+1/2));
+		this.maxDegree = n;
+		this.minDegree = (int)(Math.floor((n+1)/2.0));
 		this.dictionary = dp;
 		this.degree = getDegree(dp);
 		this.parent = parent;
@@ -50,8 +50,7 @@ public class LeafNode extends Node{
 	
 	//insert record into leafnode
 	public boolean addRecord(DictionaryPair dp) {
-		if (degree == maxDegree) {
-			
+		if (isFull()) {
 			return false;
 		} else {
 			
