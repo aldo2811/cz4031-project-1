@@ -47,6 +47,24 @@ public class Storage {
     }
 
     /**
+     * Build B+ tree on database by inserting the records from database sequentially
+     * @return B+ tree filled with records
+     */
+    public BPlusTree buildIndex() {
+        BPlusTree bpt = new BPlusTree(3);
+        for (int blockID = 0; blockID <= blockTailIdx; ++blockID) {
+            Block block = Block.fromByteArray(readBlock(blockID), RECORD_SIZE);
+            for (int recordID = 0; recordID < NUM_OF_RECORD; ++recordID) {
+                Record record = block.readRecord(recordID);
+                if (!record.isEmpty()) {
+                    bpt.insert(record, new RecordAddress(blockID, recordID));
+                }
+            }
+        }
+        return bpt;
+    }
+
+    /**
      * Insert a new record into "disk storage"
      * @param tConst data for the record
      * @param rating data for the record
