@@ -1,16 +1,41 @@
 package com.cz4031;
 
+import java.util.Arrays;
+
 /**
  * Class representing a leaf node in a B+ tree
  * Implements Node interface
  */
 public class LeafNode implements Node {
 
+    /**
+     * Maximum number of entries in a leaf node
+     */
     private int maxDegree;
+
+    /**
+     * Minimum number of entries in a leaf node
+     */
     private int minDegree;
+
+    /**
+     * Current number of entries in the node
+     */
     private int curDegree;
+
+    /**
+     * Array of key-value pairs representing an entry
+     */
     private KeyValuePair[] kvPairs;
+
+    /**
+     * Left sibling of the leaf node
+     */
     private LeafNode leftSibling;
+
+    /**
+     * Right sibling of the leaf node
+     */
     private LeafNode rightSibling;
 
     /**
@@ -45,11 +70,63 @@ public class LeafNode implements Node {
     }
 
     /**
+     * Delete an entry that matches the key value
+     * @param deleteKey key to delete
+     * @return true if found and deleted, otherwise false
+     */
+    public boolean delete(int deleteKey) {
+        for (int i = 0; i < curDegree; ++i) {
+            if (kvPairs[i].getKey().getK1() == deleteKey) {
+                Util.deleteAndShift(kvPairs, i);
+                --curDegree;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Delete an entry by its index in the node
+     * @param index index of entry to be deleted
+     * @return deleted entry
+     */
+    public KeyValuePair deleteByIndex(int index) {
+        KeyValuePair toDelete = kvPairs[index];
+        Util.deleteAndShift(kvPairs, index);
+        --curDegree;
+        return toDelete;
+    }
+
+    /**
+     * Delete all entries in the node
+     */
+    public void deleteAll() {
+        Arrays.fill(kvPairs, null);
+        curDegree = 0;
+    }
+
+    /**
      * Checks whether node is full
      * @return true if node is full, otherwise false
      */
     public boolean isFull() {
         return curDegree == maxDegree;
+    }
+
+    /**
+     * Checks whether an entry can be removed from the node while keeping the tree balanced
+     * @return true if entry can be removed, otherwise false
+     */
+    public boolean canDelete() {
+        return curDegree > minDegree;
+    }
+
+    /**
+     * Checks whether the node is underflow, having less than the minimum required number of entries
+     * @return true if node is underflow, otherwise false
+     */
+    public boolean isUnderflow() {
+        return curDegree < minDegree;
     }
 
     @Override
