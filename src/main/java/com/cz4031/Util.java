@@ -42,4 +42,17 @@ public class Util {
         }
         arr[pos] = t;
     }
+
+    /**
+     * Delete an element on the specified index in an array, then shift the elements accordingly
+     * @param arr array to be deleted from
+     * @param pos position of element to be deleted
+     * @param <T> class type of element
+     */
+    public static <T> void deleteAndShift(T[] arr, int pos) {
+        for (int i = pos; i < arr.length - 1; ++i) {
+            arr[i] = arr[i+1];
+        }
+        arr[arr.length - 1] = null;
+    }
 }
