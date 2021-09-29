@@ -9,19 +9,9 @@ import java.util.Arrays;
 public class InternalNode implements Node {
 
     /**
-     * Maximum number of pointers to child node
-     */
-    private int maxDegree;
-
-    /**
-     * Minimum number of pointers to child node
-     */
-    private int minDegree;
-
-    /**
      * Current number of pointers to child node
      */
-    private int curDegree;
+    private int degree;
 
     /**
      * Array of keys
@@ -39,29 +29,32 @@ public class InternalNode implements Node {
     private InternalNode parent;
 
     /**
-     * Construct internal node specified with maximum number of keys
+     * Construct an empty internal node specified with maximum number of keys
      * @param n maximum number of keys in a node
      */
     public InternalNode(int n) {
-        this(n, 0, new Key[n], new Node[n+1], null);
-    }
-
-    public InternalNode(int n, int curDegree, Key[] keys, Node[] pointers) {
-        this(n, curDegree, keys, pointers, null);
+        this(0, new Key[n], new Node[n+1], null);
     }
 
     /**
-     * Construct internal node specified with maximum number of keys in a node, current degree, array of keys, array of
-     * pointers
-     * @param n maximum number of keys in a node
-     * @param curDegree current degree
+     * Construct an internal node with current degree, array of keys and pointers
+     * @param degree current degree of node
      * @param keys array of keys
      * @param pointers array of pointers
      */
-    public InternalNode(int n, int curDegree, Key[] keys, Node[] pointers, InternalNode parent) {
-        this.maxDegree = n+1;
-        this.minDegree = (int) Math.floor(n/2.0) + 1;
-        this.curDegree = curDegree;
+    public InternalNode(int degree, Key[] keys, Node[] pointers) {
+        this(degree, keys, pointers, null);
+    }
+
+    /**
+     * Construct an internal node with current degree, array of keys and pointers, and parent node
+     * @param degree current degree of node
+     * @param keys array of keys
+     * @param pointers array of pointers
+     * @param parent parent node
+     */
+    public InternalNode(int degree, Key[] keys, Node[] pointers, InternalNode parent) {
+        this.degree = degree;
         this.keys = keys;
         this.pointers = pointers;
         this.parent = parent;
@@ -75,7 +68,7 @@ public class InternalNode implements Node {
         int index = Util.findIndexToInsert(keys, knPair.getKey());
         Util.insertAndShift(keys, knPair.getKey(), index);
         Util.insertAndShift(pointers, knPair.getNode(), index+1);
-        ++curDegree;
+        ++degree;
     }
 
     /**
@@ -94,7 +87,7 @@ public class InternalNode implements Node {
      */
     public void addPointer(Node pointer, int pos) {
         Util.insertAndShift(pointers, pointer, pos);
-        ++curDegree;
+        ++degree;
     }
 
     /**
@@ -116,7 +109,7 @@ public class InternalNode implements Node {
     public Node deletePointer(int pos) {
         Node pointer = pointers[pos];
         Util.deleteAndShift(pointers, pos);
-        --curDegree;
+        --degree;
         return pointer;
     }
 
@@ -126,57 +119,17 @@ public class InternalNode implements Node {
     public void deleteAll() {
         Arrays.fill(keys, null);
         Arrays.fill(pointers, null);
-        curDegree = 0;
-    }
-
-    /**
-     * Checks whether node is full
-     * @return true if node is full, otherwise false
-     */
-    public boolean isFull() {
-        return curDegree == maxDegree;
-    }
-
-    /**
-     * Checks whether a pointer can be removed from the node while keeping the tree balanced
-     * @return true if entry can be removed, otherwise false
-     */
-    public boolean canDelete() {
-        return curDegree > minDegree;
-    }
-
-    /**
-     * Checks whether the node is underflow, having less than the minimum required number of pointers
-     * @return true if node is underflow, otherwise false
-     */
-    public boolean isUnderflow() {
-        return curDegree < minDegree;
+        degree = 0;
     }
 
     @Override
-    public int getCurDegree() {
-        return curDegree;
+    public int getDegree() {
+        return degree;
     }
 
     @Override
-    public void setCurDegree(int curDegree) {
-        this.curDegree = curDegree;
-    }
-
-    public int getMaxDegree() {
-        return maxDegree;
-    }
-
-    public void setMaxDegree(int maxDegree) {
-        this.maxDegree = maxDegree;
-    }
-
-    public int getMinDegree() {
-        return minDegree;
-    }
-
-    public void setMinDegree(int minDegree) {
-        this.minDegree = minDegree;
+    public void setDegree(int degree) {
+        this.degree = degree;
     }
 
     public Key[] getKeys() {

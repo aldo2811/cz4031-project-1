@@ -5,13 +5,13 @@ package com.cz4031;
  */
 public interface Node {
 
-    public int getCurDegree();
+    int getDegree();
 
-    public void setCurDegree(int curDegree);
+    void setDegree(int degree);
 
-    public InternalNode getParent();
+    InternalNode getParent();
 
-    public void setParent(InternalNode parent);
+    void setParent(InternalNode parent);
 
-    public String toString();
+    String toString();
 }
