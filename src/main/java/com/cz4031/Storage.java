@@ -51,6 +51,7 @@ public class Storage {
      * @return B+ tree filled with records
      */
     public BPlusTree buildIndex() {
+        // TODO: Load index from disk? Or set n according to block size
         BPlusTree bpt = new BPlusTree(3);
         for (int blockID = 0; blockID <= blockTailIdx; ++blockID) {
             Block block = Block.fromByteArray(readBlock(blockID), RECORD_SIZE);
