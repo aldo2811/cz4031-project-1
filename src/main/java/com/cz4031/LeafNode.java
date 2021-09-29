@@ -9,16 +9,6 @@ import java.util.Arrays;
 public class LeafNode implements Node {
 
     /**
-     * Maximum number of entries in a leaf node
-     */
-    private int maxDegree;
-
-    /**
-     * Minimum number of entries in a leaf node
-     */
-    private int minDegree;
-
-    /**
      * Current number of entries in the node
      */
     private int curDegree;
@@ -27,6 +17,11 @@ public class LeafNode implements Node {
      * Array of key-value pairs representing an entry
      */
     private KeyValuePair[] kvPairs;
+
+    /**
+     * Parent node
+     */
+    private InternalNode parent;
 
     /**
      * Left sibling of the leaf node
@@ -39,24 +34,36 @@ public class LeafNode implements Node {
     private LeafNode rightSibling;
 
     /**
-     * Construct leaf node specified with maximum number of keys
+     * Construct an empty leaf node specified with maximum number of keys
      * @param n maximum number of keys in a node
      */
     public LeafNode(int n) {
-        this(n, 0, new KeyValuePair[n]);
+        this(0, new KeyValuePair[n], null, null, null);
     }
 
     /**
-     * Construct leaf node with maximum number of keys in a node, current degree and key-value pairs
-     * @param n maximum number of keys in a node
+     * Construct a leaf node with current degree and array of key-value pairs
+     * @param curDegree current degree of node
+     * @param kvPairs array of key-value pairs
+     */
+    public LeafNode(int curDegree, KeyValuePair[] kvPairs) {
+        this(curDegree, kvPairs, null, null, null);
+    }
+
+    /**
+     * Construct a leaf node with all attributes
      * @param curDegree current degree
      * @param kvPairs array representing key-value pairs of the node
+     * @param parent parent node
+     * @param leftSibling left sibling node
+     * @param rightSibling right sibling node
      */
-    public LeafNode(int n, int curDegree, KeyValuePair[] kvPairs) {
-        this.maxDegree = n;
-        this.minDegree = (int) Math.floor((n+1) / 2.0);
+    public LeafNode(int curDegree, KeyValuePair[] kvPairs, InternalNode parent, LeafNode leftSibling, LeafNode rightSibling) {
         this.curDegree = curDegree;
         this.kvPairs = kvPairs;
+        this.parent = parent;
+        this.leftSibling = leftSibling;
+        this.rightSibling = rightSibling;
     }
 
     /**
@@ -105,38 +112,14 @@ public class LeafNode implements Node {
         curDegree = 0;
     }
 
-    /**
-     * Checks whether node is full
-     * @return true if node is full, otherwise false
-     */
-    public boolean isFull() {
-        return curDegree == maxDegree;
-    }
-
-    /**
-     * Checks whether an entry can be removed from the node while keeping the tree balanced
-     * @return true if entry can be removed, otherwise false
-     */
-    public boolean canDelete() {
-        return curDegree > minDegree;
-    }
-
-    /**
-     * Checks whether the node is underflow, having less than the minimum required number of entries
-     * @return true if node is underflow, otherwise false
-     */
-    public boolean isUnderflow() {
-        return curDegree < minDegree;
-    }
-
     @Override
-    public int getCurDegree() {
+    public int getDegree() {
         return curDegree;
     }
 
     @Override
-    public void setCurDegree(int curDegree) {
-        this.curDegree = curDegree;
+    public void setDegree(int degree) {
+        this.curDegree = degree;
     }
 
     public KeyValuePair[] getKvPairs() {
@@ -161,6 +144,14 @@ public class LeafNode implements Node {
 
     public void setLeftSibling(LeafNode leftSibling) {
         this.leftSibling = leftSibling;
+    }
+
+    public InternalNode getParent() {
+        return parent;
+    }
+
+    public void setParent(InternalNode parent) {
+        this.parent = parent;
     }
 
     @Override
