@@ -33,6 +33,9 @@ public class InternalNode implements Node {
      */
     private Node[] pointers;
 
+    /**
+     * Parent node
+     */
     private InternalNode parent;
 
     /**
@@ -72,15 +75,6 @@ public class InternalNode implements Node {
         int index = Util.findIndexToInsert(keys, knPair.getKey());
         Util.insertAndShift(keys, knPair.getKey(), index);
         Util.insertAndShift(pointers, knPair.getNode(), index+1);
-        ++curDegree;
-    }
-
-    /**
-     * Add a pointer to the node
-     * @param node pointer to child node
-     */
-    public void addPointer(Node node) {
-        pointers[curDegree] = node;
         ++curDegree;
     }
 

@@ -161,7 +161,7 @@ public class BPlusTree {
         if (split && root == node) {
             // If root is split, add a new node to be the root
             InternalNode newNode = new InternalNode(n);
-            newNode.addPointer(node);
+            newNode.addPointer(node, newNode.getCurDegree());
             newNode.addSorted(newChildEntry);
             node.setParent(newNode);
             newChildEntry.getNode().setParent(newNode);
@@ -185,7 +185,6 @@ public class BPlusTree {
 
     /**
      * Internal implementation of deletion in B+ tree
-     * @param parentNode parent of current node
      * @param curNode current node
      * @param deleteKey key to delete
      * @param oldChildIndex index of deleted child node if any, otherwise null
@@ -207,6 +206,8 @@ public class BPlusTree {
 
             // Retrieve index of deleted child node, null if no deletion
             oldChildIndex = result.getOldChildIndex();
+
+            // Set current node since parent of traversed nodes in the lower level may be different after recursion
             node = result.getParentNode();
             found = result.isFound();
 
@@ -233,27 +234,43 @@ public class BPlusTree {
 
                     if (rightSibling != null && rightSibling.canDelete()) {
                         // If right sibling has extra entries, borrow from right sibling
-                        Key temp = rightSibling.getKeys()[0];
-                        rightSibling.getKeys()[0] = parentNode.getKeys()[curNodeIndex];
-                        parentNode.getKeys()[curNodeIndex] = temp;
-
+                        // Move first key and pointer of right sibling to current node
                         moveEntryToLeftInternalNode(node, rightSibling);
+
+                        // Swap moved key value with parent key value
+                        Key temp = node.getKeys()[node.getCurDegree()-2];
+                        node.getKeys()[node.getCurDegree()-2] = parentNode.getKeys()[curNodeIndex];
+                        parentNode.getKeys()[curNodeIndex] = temp;
                         oldChildIndex = null;
                     } else if (leftSibling != null && leftSibling.canDelete()) {
                         // If left sibling has extra entries, borrow from left sibling
-                        Key temp = leftSibling.getKeys()[leftSibling.getCurDegree() - 2];
-                        leftSibling.getKeys()[leftSibling.getCurDegree() - 2] = parentNode.getKeys()[curNodeIndex - 1];
-                        parentNode.getKeys()[curNodeIndex - 1] = temp;
-
+                        // Move last key and pointer of left sibling to current node
                         moveEntryToRightInternalNode(leftSibling, node);
+
+                        // Swap moved key value with parent key value
+                        Key temp = node.getKeys()[0];
+                        node.getKeys()[0] = parentNode.getKeys()[curNodeIndex - 1];
+                        parentNode.getKeys()[curNodeIndex - 1] = temp;
                         oldChildIndex = null;
                     } else if (rightSibling != null) {
+                        // If right sibling does not have extra entries, merge with right sibling
+                        // Set right sibling node to be removed
                         oldChildIndex = curNodeIndex + 1;
+
+                        // Pull down key from parent to current node
                         node.addKey(parentNode.getKeys()[curNodeIndex], node.getCurDegree() - 1);
+
+                        // Merge right sibling node to current node
                         merge(rightSibling, node);
                     } else if (leftSibling != null) {
+                        // If left sibling does not have extra entries, merge with left sibling
+                        // Set current node to be removed
                         oldChildIndex = curNodeIndex;
+
+                        // Pull down key from parent to left node
                         leftSibling.addKey(parentNode.getKeys()[curNodeIndex - 1], leftSibling.getCurDegree() - 1);
+
+                        // Merge current node to left sibling node
                         merge(node, leftSibling);
                     }
                 }
@@ -269,30 +286,46 @@ public class BPlusTree {
 
         } else if (curNode instanceof LeafNode) {
             LeafNode node = (LeafNode) curNode;
+
+            // Traverse leaf nodes to search for key to delete, since it is possible that the current node
+            // does not contain the key
             found = node.delete(deleteKey);
-            while (!found && node != null && node.getKvPairs()[0] != null && deleteKey >= node.getKvPairs()[node.getCurDegree()-1].getKey().getK1()) {
+            while (!found && node != null && deleteKey >= node.getKvPairs()[node.getCurDegree()-1].getKey().getK1()) {
                 node = node.getRightSibling();
                 if (node != null) found = node.delete(deleteKey);
             }
+
             if (found && node.isUnderflow() && node != root) {
-                // Get siblings and their index on parent
+                // Set parent node since current node may have a different parent after traversing leaf nodes
                 parentNode = node.getParent();
+
+                // Find index of pointer to current node in its parent
                 int curNodeIndex = findIndexOfPointer(parentNode, node);
-                LeafNode rightSibling = node.getRightSibling();
-                LeafNode leftSibling = node.getLeftSibling();
 
-                boolean canUseRight = rightSibling != null && curNodeIndex < parentNode.getCurDegree()-1;
-                boolean canUseLeft = leftSibling != null && curNodeIndex > 0;
+                // Get left and right siblings of current node, if any
+                LeafNode rightSibling = null, leftSibling = null;
+                if (curNodeIndex < parentNode.getCurDegree() - 1) {
+                    rightSibling = node.getRightSibling();
+                }
+                if (curNodeIndex > 0) {
+                    leftSibling = node.getLeftSibling();
+                }
 
-                if (canUseRight && rightSibling.canDelete()) {
+                if (rightSibling != null && rightSibling.canDelete()) {
                     // Borrow from right sibling
-                    moveEntryToLeftLeafNode(node, rightSibling);
+                    KeyValuePair entry = rightSibling.deleteByIndex(0);
+                    node.addSorted(entry);
+
+                    // Set leftmost key of right sibling to be key value of parent
                     parentNode.getKeys()[curNodeIndex] = rightSibling.getKvPairs()[0].getKey();
-                } else if (canUseLeft && leftSibling.canDelete()) {
+                } else if (leftSibling != null && leftSibling.canDelete()) {
                     // Borrow from left sibling
-                    moveEntryToRightLeafNode(leftSibling, node);
+                    KeyValuePair entry = leftSibling.deleteByIndex(leftSibling.getCurDegree() - 1);
+                    node.addSorted(entry);
+
+                    // Set rightmost key of current node to be key value of parent
                     parentNode.getKeys()[curNodeIndex-1] = node.getKvPairs()[0].getKey();
-                } else if (canUseRight) {
+                } else if (rightSibling != null) {
                     // Merge with right sibling
                     oldChildIndex = curNodeIndex+1;
                     merge(rightSibling, node);
@@ -300,7 +333,7 @@ public class BPlusTree {
                     // Modify siblings of nodes
                     node.setRightSibling(rightSibling.getRightSibling());
                     if (node.getRightSibling() != null) node.getRightSibling().setLeftSibling(node);
-                } else if (canUseLeft) {
+                } else if (leftSibling != null) {
                     // Merge with left sibling
                     oldChildIndex = curNodeIndex;
                     merge(node, leftSibling);
@@ -311,6 +344,9 @@ public class BPlusTree {
                 }
             }
         }
+
+        // Return object consisting of index of deleted child (if any), parent of current node,
+        // and a boolean indicating whether an entry is deleted
         return new DeleteResult(oldChildIndex, parentNode, found);
     }
 
@@ -320,12 +356,18 @@ public class BPlusTree {
      * @param dst destination internal node, used to store the merged node
      */
     public void merge(InternalNode src, InternalNode dst) {
+        // Change parent of source node's child nodes to destination node
         for (int i = 0; i < src.getCurDegree(); ++i) {
             src.getPointers()[i].setParent(dst);
         }
+
+        // Move all keys and pointers of source node to back of destination node
         System.arraycopy(src.getKeys(), 0, dst.getKeys(), dst.getCurDegree(), src.getCurDegree() - 1);
         System.arraycopy(src.getPointers(), 0, dst.getPointers(), dst.getCurDegree(), src.getCurDegree());
         dst.setCurDegree(src.getCurDegree() + dst.getCurDegree());
+
+        // Delete source node
+        src.setParent(null);
         src.deleteAll();
     }
 
@@ -354,7 +396,7 @@ public class BPlusTree {
     }
 
     /**
-     * Move the right most key and pointer of left internal node to right internal node
+     * Move the rightmost key and pointer of left internal node to right internal node
      * @param left left internal node (source)
      * @param right right internal node (destination)
      */
@@ -364,26 +406,6 @@ public class BPlusTree {
         right.addKey(key, 0);
         right.addPointer(pointer, 0);
         pointer.setParent(right);
-    }
-
-    /**
-     * Move the leftmost entry of right leaf node to left leaf node
-     * @param left left leaf node (destination)
-     * @param right right leaf node (source)
-     */
-    public void moveEntryToLeftLeafNode(LeafNode left, LeafNode right) {
-        KeyValuePair entry = right.deleteByIndex(0);
-        left.addSorted(entry);
-    }
-
-    /**
-     * Move the rightmost entry of left leaf node to right leaf node
-     * @param left left leaf node (source)
-     * @param right right leaf node (destination)
-     */
-    public void moveEntryToRightLeafNode(LeafNode left, LeafNode right) {
-        KeyValuePair entry = left.deleteByIndex(left.getCurDegree() - 1);
-        right.addSorted(entry);
     }
 
     /**
@@ -423,6 +445,7 @@ public class BPlusTree {
         InternalNode newNode = new InternalNode(n, secondHalfPointers.length,
                 Arrays.copyOf(secondHalfKeys, keys.length), Arrays.copyOf(secondHalfPointers, pointers.length));
 
+        // Set the new node as parent of moved nodes
         for (int i = 0; i < newNode.getCurDegree(); ++i) {
             newNode.getPointers()[i].setParent(newNode);
         }
