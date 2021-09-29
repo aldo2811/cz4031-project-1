@@ -9,5 +9,9 @@ public interface Node {
 
     public void setCurDegree(int curDegree);
 
+    public InternalNode getParent();
+
+    public void setParent(InternalNode parent);
+
     public String toString();
 }

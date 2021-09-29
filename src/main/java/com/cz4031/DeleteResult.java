@@ -10,6 +10,8 @@ public class DeleteResult {
      */
     private Integer oldChildIndex;
 
+    private InternalNode parentNode;
+
     /**
      * Indicates if an entry has been deleted
      */
@@ -20,8 +22,9 @@ public class DeleteResult {
      * @param oldChildIndex index of deleted child node if any, otherwise null
      * @param found indicates if an entry has been deleted
      */
-    public DeleteResult(Integer oldChildIndex, boolean found) {
+    public DeleteResult(Integer oldChildIndex, InternalNode parentNode, boolean found) {
         this.oldChildIndex = oldChildIndex;
+        this.parentNode = parentNode;
         this.found = found;
     }
 
@@ -31,6 +34,14 @@ public class DeleteResult {
 
     public void setOldChildIndex(Integer oldChildIndex) {
         this.oldChildIndex = oldChildIndex;
+    }
+
+    public InternalNode getParentNode() {
+        return parentNode;
+    }
+
+    public void setParentNode(InternalNode parentNode) {
+        this.parentNode = parentNode;
     }
 
     public boolean isFound() {

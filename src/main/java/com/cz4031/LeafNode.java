@@ -28,6 +28,8 @@ public class LeafNode implements Node {
      */
     private KeyValuePair[] kvPairs;
 
+    private InternalNode parent;
+
     /**
      * Left sibling of the leaf node
      */
@@ -43,7 +45,11 @@ public class LeafNode implements Node {
      * @param n maximum number of keys in a node
      */
     public LeafNode(int n) {
-        this(n, 0, new KeyValuePair[n]);
+        this(n, 0, new KeyValuePair[n], null);
+    }
+
+    public LeafNode(int n, int curDegree, KeyValuePair[] kvPairs) {
+        this(n, curDegree, kvPairs, null);
     }
 
     /**
@@ -52,11 +58,12 @@ public class LeafNode implements Node {
      * @param curDegree current degree
      * @param kvPairs array representing key-value pairs of the node
      */
-    public LeafNode(int n, int curDegree, KeyValuePair[] kvPairs) {
+    public LeafNode(int n, int curDegree, KeyValuePair[] kvPairs, InternalNode parent) {
         this.maxDegree = n;
         this.minDegree = (int) Math.floor((n+1) / 2.0);
         this.curDegree = curDegree;
         this.kvPairs = kvPairs;
+        this.parent = parent;
     }
 
     /**
@@ -161,6 +168,14 @@ public class LeafNode implements Node {
 
     public void setLeftSibling(LeafNode leftSibling) {
         this.leftSibling = leftSibling;
+    }
+
+    public InternalNode getParent() {
+        return parent;
+    }
+
+    public void setParent(InternalNode parent) {
+        this.parent = parent;
     }
 
     @Override

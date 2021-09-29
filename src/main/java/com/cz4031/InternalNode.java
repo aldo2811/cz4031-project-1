@@ -33,12 +33,18 @@ public class InternalNode implements Node {
      */
     private Node[] pointers;
 
+    private InternalNode parent;
+
     /**
      * Construct internal node specified with maximum number of keys
      * @param n maximum number of keys in a node
      */
     public InternalNode(int n) {
-        this(n, 0, new Key[n], new Node[n+1]);
+        this(n, 0, new Key[n], new Node[n+1], null);
+    }
+
+    public InternalNode(int n, int curDegree, Key[] keys, Node[] pointers) {
+        this(n, curDegree, keys, pointers, null);
     }
 
     /**
@@ -49,12 +55,13 @@ public class InternalNode implements Node {
      * @param keys array of keys
      * @param pointers array of pointers
      */
-    public InternalNode(int n, int curDegree, Key[] keys, Node[] pointers) {
+    public InternalNode(int n, int curDegree, Key[] keys, Node[] pointers, InternalNode parent) {
         this.maxDegree = n+1;
         this.minDegree = (int) Math.floor(n/2.0) + 1;
         this.curDegree = curDegree;
         this.keys = keys;
         this.pointers = pointers;
+        this.parent = parent;
     }
 
     /**
@@ -192,6 +199,14 @@ public class InternalNode implements Node {
 
     public void setPointers(Node[] pointers) {
         this.pointers = pointers;
+    }
+
+    public InternalNode getParent() {
+        return parent;
+    }
+
+    public void setParent(InternalNode parent) {
+        this.parent = parent;
     }
 
     @Override
