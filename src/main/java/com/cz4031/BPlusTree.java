@@ -11,6 +11,7 @@ import java.util.Queue;
  * Class representing the B+ tree data structure
  */
 public class BPlusTree {
+    // TODO: Add logs to methods
 
     /**
      * Maximum number of keys in a node
@@ -43,6 +44,26 @@ public class BPlusTree {
     private int minKeysLeaf;
 
     /**
+     * Height of tree
+     */
+    private int height;
+
+    /**
+     * Total number of nodes in the tree
+     */
+    private int totalNodes;
+
+    /**
+     * Total number of nodes accessed in an operation
+     */
+    private int totalNodeAccess;
+
+    /**
+     * Total number of nodes deleted in a delete operation
+     */
+    private int totalNodesDeleted;
+
+    /**
      * Construct a B+ tree
      * @param n maximum number of keys in a node
      */
@@ -50,11 +71,16 @@ public class BPlusTree {
         this.n = n;
 
         // Initialize root as an empty leaf node
-        this.root = new LeafNode(n);
+        this.root = null;
         this.maxDegreeInternal = n+1;
         this.minDegreeInternal = (int) Math.floor(n/2.0) + 1;
         this.maxKeysLeaf = n;
         this.minKeysLeaf = (int) Math.floor((n+1) / 2.0);
+
+        this.height = 0;
+        this.totalNodes = 0;
+        this.totalNodeAccess = 0;
+        this.totalNodesDeleted = 0;
     }
 
     /**
@@ -63,6 +89,9 @@ public class BPlusTree {
      * @return a list of record addresses with a key value equal to the search key
      */
     public List<RecordAddress> search(int searchKey) {
+        // Initialize total node access for experiment
+        totalNodeAccess = 0;
+
         // Since there could be more than one result for a search key, searching for a single key can be done
         // by using range search, with the search key as both the lower and upper bound
         return searchInternal(root, searchKey, searchKey);
@@ -75,6 +104,9 @@ public class BPlusTree {
      * @return a list of record addresses with a key value between the lower and upper bounds
      */
     public List<RecordAddress> search(int lower, int upper) {
+        // Initialize total node access for experiment
+        totalNodeAccess = 0;
+
         return searchInternal(root, lower, upper);
     }
 
@@ -93,6 +125,9 @@ public class BPlusTree {
 
             // Iterate through leaf node to find all occurrences of search key
             while (leafNode != null && !finished) {
+                // Increase total number of nodes accessed here, since leaf nodes can be traversed through siblings
+                ++totalNodeAccess;
+
                 KeyValuePair[] kvPairs = leafNode.getKvPairs();
 
                 for (KeyValuePair kv : kvPairs) {
@@ -115,6 +150,9 @@ public class BPlusTree {
             }
         } else if (node instanceof InternalNode) {
             InternalNode curNode = (InternalNode) node;
+
+            // Increase number of node accessed
+            ++totalNodeAccess;
 
             // Traverse to the leftmost subtree possibly containing the lower bound
             int pointerIndex = findIndexOfNode(curNode, lower);
@@ -146,6 +184,11 @@ public class BPlusTree {
      * @return a key-node pair if current node is split, otherwise null
      */
     public KeyNodePair insertInternal(Node node, KeyValuePair entry, KeyNodePair newChildEntry) {
+        if (root == null) {
+            root = new LeafNode(n);
+            node = root;
+        }
+
         boolean split = false;
         if (node instanceof InternalNode) {
             InternalNode curNode = (InternalNode) node;
@@ -166,6 +209,9 @@ public class BPlusTree {
                     // Split node if it is full
                     newChildEntry = splitNode(curNode, newChildEntry);
                     split = true;
+
+                    // Increase number of nodes
+                    ++totalNodes;
                 }
             }
 
@@ -179,6 +225,9 @@ public class BPlusTree {
                 // Split leaf if it is full
                 newChildEntry = splitLeaf(leafNode, entry);
                 split = true;
+
+                // Increase number of nodes
+                ++totalNodes;
             }
         }
 
@@ -190,6 +239,10 @@ public class BPlusTree {
             node.setParent(newNode);
             newChildEntry.getNode().setParent(newNode);
             root = newNode;
+
+            // Increase height of tree and number of nodes
+            ++height;
+            ++totalNodes;
         }
 
         return newChildEntry;
@@ -200,11 +253,14 @@ public class BPlusTree {
      * @param deleteKey key to delete
      */
     public void delete(int deleteKey) {
+        // Initialize total number of nodes deleted for experiment
+        totalNodesDeleted = 0;
+
         // Keep deleting until the key is not found in the B+ tree
-        DeleteResult result = deleteInternal(root, deleteKey, null);
-        while (result.isFound()) {
+        DeleteResult result;
+        do {
             result = deleteInternal(root, deleteKey, null);
-        }
+        } while (result != null && result.isFound());
     }
 
     /**
@@ -216,6 +272,10 @@ public class BPlusTree {
      * and boolean indicating if an entry is deleted
      */
     public DeleteResult deleteInternal(Node curNode, int deleteKey, Integer oldChildIndex) {
+        if (root == null) {
+            return null;
+        }
+
         DeleteResult result;
         InternalNode parentNode = curNode.getParent();
         boolean found = false;
@@ -307,6 +367,11 @@ public class BPlusTree {
                 root = ((InternalNode) root).getPointers()[0];
                 root.setParent(null);
                 temp.deleteAll();
+
+                // Decrease height of tree and number of nodes, increase total number of deleted nodes
+                --height;
+                --totalNodes;
+                ++totalNodesDeleted;
             }
 
         } else if (curNode instanceof LeafNode) {
@@ -315,7 +380,8 @@ public class BPlusTree {
             // Traverse leaf nodes to search for key to delete, since it is possible that the current node
             // does not contain the key
             found = node.delete(deleteKey);
-            while (!found && node != null && deleteKey >= node.getKvPairs()[node.getDegree()-1].getKey().getK1()) {
+            while (!found && node != null && node.getDegree() > 0
+                    && deleteKey >= node.getKvPairs()[node.getDegree()-1].getKey().getK1()) {
                 node = node.getRightSibling();
                 if (node != null) found = node.delete(deleteKey);
             }
@@ -368,6 +434,10 @@ public class BPlusTree {
                     if (leftSibling.getRightSibling() != null) leftSibling.getRightSibling().setLeftSibling(leftSibling);
                 }
             }
+
+            if (node == root && root.getDegree() == 0) {
+                root = null;
+            }
         }
 
         // Return object consisting of index of deleted child (if any), parent of current node,
@@ -394,6 +464,10 @@ public class BPlusTree {
         // Delete source node
         src.setParent(null);
         src.deleteAll();
+
+        // Increase number of nodes deleted
+        ++totalNodesDeleted;
+        --totalNodes;
     }
 
     /**
@@ -408,6 +482,10 @@ public class BPlusTree {
 
         // Delete source node
         src.deleteAll();
+
+        // Increase number of nodes deleted
+        ++totalNodesDeleted;
+        --totalNodes;
     }
 
     /**
@@ -478,8 +556,8 @@ public class BPlusTree {
         node.setDegree(firstHalfPointers.length);
 
         // Create a new node to store the split keys and pointers
-        InternalNode newNode = new InternalNode(secondHalfPointers.length,
-                Arrays.copyOf(secondHalfKeys, keys.length), Arrays.copyOf(secondHalfPointers, pointers.length));
+        InternalNode newNode = new InternalNode(secondHalfPointers.length, Arrays.copyOf(secondHalfKeys, keys.length),
+                Arrays.copyOf(secondHalfPointers, pointers.length));
 
         // Set the new node as parent of moved nodes
         for (int i = 0; i < newNode.getDegree(); ++i) {
@@ -571,6 +649,30 @@ public class BPlusTree {
             if (pointers[i] == node) break;
         }
         return i;
+    }
+
+    public int getN() {
+        return n;
+    }
+
+    public Node getRoot() {
+        return root;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public int getTotalNodes() {
+        return totalNodes;
+    }
+
+    public int getTotalNodeAccess() {
+        return totalNodeAccess;
+    }
+
+    public int getTotalNodesDeleted() {
+        return totalNodesDeleted;
     }
 
     public String toString() {
