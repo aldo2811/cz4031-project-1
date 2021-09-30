@@ -9,21 +9,32 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 public class Storage {
-    private final int BLOCK_SIZE = 100;
-    private final int RECORD_SIZE = 19;
-    private final int NUM_OF_RECORD = BLOCK_SIZE / RECORD_SIZE;
-    private final int MEMORY_SIZE = 200 << 20;
+    private final int BLOCK_SIZE;
+    private final int RECORD_SIZE;
+    private final int NUM_OF_RECORD;
+    private final int MEMORY_SIZE;
 
     private byte[] blocks ;
     private int blockTailIdx;
     private LinkedList<RecordAddress> emptyRecord;
 
-    public Storage() {
+    private BPlusTree bpt;
+    private AccessLogger accLog;
+
+
+    public Storage(int blockSize, int recordSize, int memorySize) {
+        BLOCK_SIZE = blockSize;
+        RECORD_SIZE = recordSize;
+        NUM_OF_RECORD = BLOCK_SIZE / RECORD_SIZE;
+        MEMORY_SIZE = memorySize;
+
         blocks = new byte[MEMORY_SIZE];
         blockTailIdx = -1;
         emptyRecord = new LinkedList<>();
+        accLog = new AccessLogger(this);
     }
 
     public void initWithTSV(String path) {
@@ -48,11 +59,9 @@ public class Storage {
 
     /**
      * Build B+ tree on database by inserting the records from database sequentially
-     * @return B+ tree filled with records
      */
-    public BPlusTree buildIndex() {
-        // TODO: Load index from disk? Or set n according to block size
-        BPlusTree bpt = new BPlusTree(3);
+    public void buildIndex() {
+        bpt = new BPlusTree(Util.getNFromBlockSize(BLOCK_SIZE), this);
         for (int blockID = 0; blockID <= blockTailIdx; ++blockID) {
             Block block = Block.fromByteArray(readBlock(blockID), RECORD_SIZE);
             for (int recordID = 0; recordID < NUM_OF_RECORD; ++recordID) {
@@ -62,7 +71,6 @@ public class Storage {
                 }
             }
         }
-        return bpt;
     }
 
     /**
@@ -89,6 +97,7 @@ public class Storage {
      * @param address address of record to get
      */
     public Record readRecord(RecordAddress address) {
+        accLog.addBlock(address);
         return Block.fromByteArray(readBlock(address.getBlockID()), RECORD_SIZE).readRecord(address.getRecordID());
     }
 
@@ -132,5 +141,63 @@ public class Storage {
      */
     public byte[] readBlock(int blockID) {
         return Arrays.copyOfRange(blocks, blockID * BLOCK_SIZE, blockID * BLOCK_SIZE + BLOCK_SIZE);
+    }
+
+    public BPlusTree getBPT() {
+        return bpt;
+    }
+
+    public List<Record> searchBPT(int searchKey) {
+        List<RecordAddress> recordAddresses=  bpt.search(searchKey);
+        List<Record> records = new LinkedList<>();
+        for(RecordAddress ra : recordAddresses) {
+            records.add(readRecord(ra));
+        }
+        return records;
+    }
+
+    public List<Record> searchBPT(int lower, int upper) {
+        List<RecordAddress> recordAddresses=  bpt.search(lower, upper);
+        List<Record> records = new LinkedList<>();
+        for(RecordAddress ra : recordAddresses) {
+            records.add(readRecord(ra));
+        }
+        return records;
+    }
+
+    public void deleteBPT(int deleteKey) {
+        bpt.delete(deleteKey);
+    }
+
+    public int getNumBlocksUsed() {
+        return blockTailIdx + 1;
+    }
+
+    public int getRecordSize() {
+        return RECORD_SIZE;
+    }
+
+    public void logNodeAccess(Node node) {
+        accLog.addNode(node);
+    }
+
+    public void resetLog() {
+        accLog.reset();
+    }
+
+    public String getNodeLog() {
+        return accLog.getNodeAccess();
+    }
+
+    public String getBlockLog() {
+        return accLog.getBlockAccess();
+    }
+
+    public int getNumBlockAccess() {
+        return accLog.getNumBlockAccess();
+    }
+
+    public int getNumNodeAccess() {
+        return accLog.getNumNodeAccess();
     }
 }

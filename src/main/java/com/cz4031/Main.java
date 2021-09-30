@@ -1,45 +1,76 @@
 package com.cz4031;
 
+import java.util.List;
+
 public class Main {
 
     public static void main(String[] args) {
         System.out.println("Running Application");
 
-        Storage st = new Storage();
+        for (int blockSize : new int[]{100, 500}) {
+            System.out.println("===============================================");
+            System.out.printf("Block size: %d bytes\n", blockSize);
 
-        st.initWithTSV("data.tsv");
-        // TODO: Use storage instead of initializing b+ tree here
-        // Experiment 2
-        BPlusTree bpt = st.buildIndex();
-        System.out.println("\nExperiment 2");
-        System.out.println("Parameter n of B+ tree: " + bpt.getN());
-        System.out.println("Number of nodes in B+ tree: " + bpt.getTotalNodes());
-        System.out.println("Height of B+ tree: " + bpt.getHeight());
+            Storage st = new Storage(blockSize, 19, 100 << 20);
 
-        // TODO: Retrieve number and content of data blocks accessed
-        // TODO: Move search to storage
-        // Experiment 3
-        bpt.search(500);
-        System.out.println("\nExperiment 3");
-        System.out.println("Number of index nodes accessed: " + bpt.getTotalNodeAccess());
-        // TODO: Add logging for accessed nodes
+            st.initWithTSV("data.tsv");
+            // Experiment 1
+            System.out.println("Experiment 1");
+            System.out.println("Number of blocks: " + st.getNumBlocksUsed());
+            System.out.println("Size of database: " + st.getNumBlocksUsed() * blockSize / 1_000_000 + " MB (" + st.getNumBlocksUsed() * blockSize + " bytes)");
 
-        // Experiment 4
-        bpt.search(30000, 40000);
-        System.out.println("\nExperiment 4");
-        System.out.println("Number of index nodes accessed: " + bpt.getTotalNodeAccess());
+            // Experiment 2
+            st.buildIndex();
+            System.out.println("\nExperiment 2");
+            System.out.println("Parameter n of B+ tree: " + st.getBPT().getN());
+            System.out.println("Number of nodes in B+ tree: " + st.getBPT().getTotalNodes());
+            System.out.println("Height of B+ tree: " + st.getBPT().getHeight());
+            System.out.println("Content of root node: " + st.getBPT().getRoot());
+            System.out.println("Content of first child of root node: " + ((InternalNode)st.getBPT().getRoot()).getPointers()[0]);
 
-        // TODO: Move delete to storage
-        // Experiment 5
-        bpt.delete(1000);
-        System.out.println("\nExperiment 5");
-        System.out.println("Total number of deleted nodes: " + bpt.getTotalNodesDeleted());
-        System.out.println("Number of nodes of updated B+ tree: " + bpt.getTotalNodes());
-        System.out.println("Height of updated B+ tree: " + bpt.getHeight());
-        System.out.println("Content of root node: " + bpt.getRoot());
-        System.out.println("Content of first child of root node: " + ((InternalNode)bpt.getRoot()).getPointers()[0]);
+            // Experiment 3
+            List<Record> recordsExpt3 = st.searchBPT(500);
+            System.out.println("\nExperiment 3");
+            System.out.println("Number of index nodes accessed: " + st.getNumNodeAccess());
+            System.out.println("Index nodes accesses:");
+            System.out.println(st.getNodeLog());
+            System.out.println("Number of block accessed: " + st.getNumBlockAccess());
+            System.out.println("Block accessed:");
+            System.out.print(st.getBlockLog());
+            double avgOfAvgRatingExpt3 = 0.0;
+            for(Record r : recordsExpt3) {
+                avgOfAvgRatingExpt3 += r.getAvgRating();
+            }
+            avgOfAvgRatingExpt3 /= recordsExpt3.size();
+            System.out.println("Average of averageRatings returned: " + avgOfAvgRatingExpt3);
 
-        // TODO: Redo experiment with 500 B block
-        // TODO: Add installation guide for running code
+
+            // Experiment 4
+            List<Record> recordsExpt4 = st.searchBPT(30000, 40000);
+            System.out.println("\nExperiment 4");
+            System.out.println("Number of index nodes accessed: " + st.getNumNodeAccess());
+            System.out.println("Index nodes accesses:");
+            System.out.println(st.getNodeLog());
+            System.out.println("Number of block accessed: " + st.getNumBlockAccess());
+            System.out.println("Block accessed:");
+            System.out.print(st.getBlockLog());
+            double avgOfAvgRatingExpt4 = 0.0;
+            for(Record r : recordsExpt4) {
+                avgOfAvgRatingExpt4 += r.getAvgRating();
+            }
+            avgOfAvgRatingExpt4 /= recordsExpt4.size();
+            System.out.println("Average of averageRatings returned: " + avgOfAvgRatingExpt4);
+
+            // Experiment 5
+            st.deleteBPT(1000);
+            System.out.println("\nExperiment 5");
+            System.out.println("Total number of deleted nodes: " + st.getBPT().getTotalNodesDeleted());
+            System.out.println("Number of nodes of updated B+ tree: " + st.getBPT().getTotalNodes());
+            System.out.println("Height of updated B+ tree: " + st.getBPT().getHeight());
+            System.out.println("Content of root node: " + st.getBPT().getRoot());
+            System.out.println("Content of first child of root node: " + ((InternalNode)st.getBPT().getRoot()).getPointers()[0]);
+
+            // TODO: Add installation guide for running code
+        }
     }
 }

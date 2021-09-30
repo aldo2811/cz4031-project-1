@@ -54,20 +54,17 @@ public class BPlusTree {
     private int totalNodes;
 
     /**
-     * Total number of nodes accessed in an operation
-     */
-    private int totalNodeAccess;
-
-    /**
      * Total number of nodes deleted in a delete operation
      */
     private int totalNodesDeleted;
+
+    private Storage st;
 
     /**
      * Construct a B+ tree
      * @param n maximum number of keys in a node
      */
-    public BPlusTree(int n) {
+    public BPlusTree(int n, Storage st) {
         this.n = n;
 
         // Initialize root as an empty leaf node
@@ -79,8 +76,8 @@ public class BPlusTree {
 
         this.height = 0;
         this.totalNodes = 0;
-        this.totalNodeAccess = 0;
         this.totalNodesDeleted = 0;
+        this.st = st;
     }
 
     /**
@@ -90,7 +87,7 @@ public class BPlusTree {
      */
     public List<RecordAddress> search(int searchKey) {
         // Initialize total node access for experiment
-        totalNodeAccess = 0;
+        st.resetLog();
 
         // Since there could be more than one result for a search key, searching for a single key can be done
         // by using range search, with the search key as both the lower and upper bound
@@ -105,7 +102,7 @@ public class BPlusTree {
      */
     public List<RecordAddress> search(int lower, int upper) {
         // Initialize total node access for experiment
-        totalNodeAccess = 0;
+        st.resetLog();
 
         return searchInternal(root, lower, upper);
     }
@@ -126,7 +123,7 @@ public class BPlusTree {
             // Iterate through leaf node to find all occurrences of search key
             while (leafNode != null && !finished) {
                 // Increase total number of nodes accessed here, since leaf nodes can be traversed through siblings
-                ++totalNodeAccess;
+                st.logNodeAccess(leafNode);
 
                 KeyValuePair[] kvPairs = leafNode.getKvPairs();
 
@@ -152,7 +149,7 @@ public class BPlusTree {
             InternalNode curNode = (InternalNode) node;
 
             // Increase number of node accessed
-            ++totalNodeAccess;
+            st.logNodeAccess(curNode);
 
             // Traverse to the leftmost subtree possibly containing the lower bound
             int pointerIndex = findIndexOfNode(curNode, lower);
@@ -665,10 +662,6 @@ public class BPlusTree {
 
     public int getTotalNodes() {
         return totalNodes;
-    }
-
-    public int getTotalNodeAccess() {
-        return totalNodeAccess;
     }
 
     public int getTotalNodesDeleted() {

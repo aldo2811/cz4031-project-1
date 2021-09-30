@@ -55,4 +55,8 @@ public class Util {
         }
         arr[arr.length - 1] = null;
     }
+
+    public static int getNFromBlockSize(int blockSize) {
+        return (blockSize - 4) / 18;
+    }
 }
