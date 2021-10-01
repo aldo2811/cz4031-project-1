@@ -1,17 +1,42 @@
 package com.cz4031;
 
+/**
+ * Class representing a record in storage
+ */
 public class Record {
 
+    /**
+     * Empty flag
+     */
     private boolean empty;
+
+    /**
+     * tconst attribute
+     */
     private char[] tconst;
+
+    /**
+     * Average rating attribute
+     */
     private float avgRating;
+
+    /**
+     * Number of votes attribute
+     */
     private int numVotes;
 
+    /**
+     * Construct an empty record
+     */
     public Record() {
         tconst = new char[10];
         empty = true;
     }
 
+    /**
+     * Construct an empty record
+     * @return empty record
+     */
     public static Record empty() {
         return new Record();
     }

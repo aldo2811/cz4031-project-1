@@ -98,8 +98,8 @@ public class BPlusTree {
 
     /**
      * Search for records with the value within the lower and upper bounds
-     * @param lower lower bound of the search key (numVotes)
-     * @param upper upper bound of the search key (numVotes)
+     * @param lower lower bound of the search key, inclusive (numVotes)
+     * @param upper upper bound of the search key, inclusive (numVotes)
      * @return a list of record addresses with a key value between the lower and upper bounds
      */
     public List<RecordAddress> search(int lower, int upper) {

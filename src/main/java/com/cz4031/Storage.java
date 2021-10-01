@@ -147,6 +147,11 @@ public class Storage {
         return bpt;
     }
 
+    /**
+     * Search for records given the key (numVotes), using index
+     * @param searchKey search key value
+     * @return list of records matching the key value
+     */
     public List<Record> searchBPT(int searchKey) {
         List<RecordAddress> recordAddresses=  bpt.search(searchKey);
         List<Record> records = new LinkedList<>();
@@ -156,6 +161,12 @@ public class Storage {
         return records;
     }
 
+    /**
+     * Search for records given the lower and upper bounds, using index
+     * @param lower lower bound of search key value, inclusive (numVotes)
+     * @param upper upper bound of search key value, inclusive (numVotes)
+     * @return list of records having the key value within the lower and upper bounds
+     */
     public List<Record> searchBPT(int lower, int upper) {
         List<RecordAddress> recordAddresses=  bpt.search(lower, upper);
         List<Record> records = new LinkedList<>();
@@ -165,6 +176,10 @@ public class Storage {
         return records;
     }
 
+    /**
+     * Delete records that match the key value, using index
+     * @param deleteKey
+     */
     public void deleteBPT(int deleteKey) {
         bpt.delete(deleteKey);
     }
