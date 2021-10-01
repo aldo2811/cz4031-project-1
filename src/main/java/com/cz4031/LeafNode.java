@@ -11,7 +11,7 @@ public class LeafNode implements Node {
     /**
      * Current number of entries in the node
      */
-    private int curDegree;
+    private int degree;
 
     /**
      * Array of key-value pairs representing an entry
@@ -43,23 +43,23 @@ public class LeafNode implements Node {
 
     /**
      * Construct a leaf node with current degree and array of key-value pairs
-     * @param curDegree current degree of node
+     * @param degree current degree of node
      * @param kvPairs array of key-value pairs
      */
-    public LeafNode(int curDegree, KeyValuePair[] kvPairs) {
-        this(curDegree, kvPairs, null, null, null);
+    public LeafNode(int degree, KeyValuePair[] kvPairs) {
+        this(degree, kvPairs, null, null, null);
     }
 
     /**
      * Construct a leaf node with all attributes
-     * @param curDegree current degree
+     * @param degree current degree
      * @param kvPairs array representing key-value pairs of the node
      * @param parent parent node
      * @param leftSibling left sibling node
      * @param rightSibling right sibling node
      */
-    public LeafNode(int curDegree, KeyValuePair[] kvPairs, InternalNode parent, LeafNode leftSibling, LeafNode rightSibling) {
-        this.curDegree = curDegree;
+    public LeafNode(int degree, KeyValuePair[] kvPairs, InternalNode parent, LeafNode leftSibling, LeafNode rightSibling) {
+        this.degree = degree;
         this.kvPairs = kvPairs;
         this.parent = parent;
         this.leftSibling = leftSibling;
@@ -73,23 +73,24 @@ public class LeafNode implements Node {
     public void addSorted(KeyValuePair entry) {
         int index = Util.findIndexToInsert(kvPairs, entry);
         Util.insertAndShift(kvPairs, entry, index);
-        ++curDegree;
+        ++degree;
     }
 
     /**
      * Delete an entry that matches the key value
      * @param deleteKey key to delete
-     * @return true if found and deleted, otherwise false
+     * @return the deleted entry if found, otherwise null
      */
-    public boolean delete(int deleteKey) {
-        for (int i = 0; i < curDegree; ++i) {
+    public KeyValuePair delete(int deleteKey) {
+        for (int i = 0; i < degree; ++i) {
             if (kvPairs[i].getKey().getK1() == deleteKey) {
+                KeyValuePair kvToDelete = kvPairs[i];
                 Util.deleteAndShift(kvPairs, i);
-                --curDegree;
-                return true;
+                --degree;
+                return kvToDelete;
             }
         }
-        return false;
+        return null;
     }
 
     /**
@@ -100,7 +101,7 @@ public class LeafNode implements Node {
     public KeyValuePair deleteByIndex(int index) {
         KeyValuePair toDelete = kvPairs[index];
         Util.deleteAndShift(kvPairs, index);
-        --curDegree;
+        --degree;
         return toDelete;
     }
 
@@ -109,17 +110,17 @@ public class LeafNode implements Node {
      */
     public void deleteAll() {
         Arrays.fill(kvPairs, null);
-        curDegree = 0;
+        degree = 0;
     }
 
     @Override
     public int getDegree() {
-        return curDegree;
+        return degree;
     }
 
     @Override
     public void setDegree(int degree) {
-        this.curDegree = degree;
+        this.degree = degree;
     }
 
     public KeyValuePair[] getKvPairs() {
@@ -157,7 +158,7 @@ public class LeafNode implements Node {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < curDegree; ++i) {
+        for (int i = 0; i < degree; ++i) {
             sb.append(kvPairs[i].getKey().getK1());
             sb.append("  ");
         }

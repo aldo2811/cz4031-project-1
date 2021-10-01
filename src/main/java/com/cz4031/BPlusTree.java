@@ -378,11 +378,17 @@ public class BPlusTree {
 
             // Traverse leaf nodes to search for key to delete, since it is possible that the current node
             // does not contain the key
-            found = node.delete(deleteKey);
-            while (!found && node != null && node.getDegree() > 0
+            KeyValuePair deletedEntry = node.delete(deleteKey);
+            while (deletedEntry == null && node != null && node.getDegree() > 0
                     && deleteKey >= node.getKvPairs()[node.getDegree()-1].getKey().getK1()) {
                 node = node.getRightSibling();
-                if (node != null) found = node.delete(deleteKey);
+                if (node != null) deletedEntry = node.delete(deleteKey);
+            }
+
+            // Delete entry in storage
+            if (deletedEntry != null) {
+                found = true;
+                st.deleteRecord(deletedEntry.getRecordAddress());
             }
 
             if (found && node.getDegree() < minKeysLeaf && node != root) {
