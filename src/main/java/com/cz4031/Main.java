@@ -8,20 +8,21 @@ public class Main {
         System.out.println("Running Application");
 
         for (int blockSize : new int[]{100, 500}) {
+            System.out.println();
             System.out.println("===============================================");
-            System.out.printf("Block size: %d bytes\n", blockSize);
+            System.out.printf("BLOCK SIZE: %d bytes\n", blockSize);
 
             Storage st = new Storage(blockSize, 19, 100 << 20);
-
             st.initWithTSV("data.tsv");
+
             // Experiment 1
-            System.out.println("Experiment 1");
+            System.out.println("EXPERIMENT 1");
             System.out.println("Number of blocks: " + st.getNumBlocksUsed());
             System.out.println("Size of database: " + st.getNumBlocksUsed() * blockSize / 1_000_000 + " MB (" + st.getNumBlocksUsed() * blockSize + " bytes)");
 
             // Experiment 2
             st.buildIndex();
-            System.out.println("\nExperiment 2");
+            System.out.println("\nEXPERIMENT 2");
             System.out.println("Parameter n of B+ tree: " + st.getBPT().getN());
             System.out.println("Number of nodes in B+ tree: " + st.getBPT().getTotalNodes());
             System.out.println("Height of B+ tree: " + st.getBPT().getHeight());
@@ -30,7 +31,7 @@ public class Main {
 
             // Experiment 3
             List<Record> recordsExpt3 = st.searchBPT(500);
-            System.out.println("\nExperiment 3");
+            System.out.println("\nEXPERIMENT 3");
             System.out.println("Number of index nodes accessed: " + st.getNumNodeAccess());
             System.out.println("Index nodes accesses:");
             System.out.println(st.getNodeLog());
@@ -47,7 +48,7 @@ public class Main {
 
             // Experiment 4
             List<Record> recordsExpt4 = st.searchBPT(30000, 40000);
-            System.out.println("\nExperiment 4");
+            System.out.println("\nEXPERIMENT 4");
             System.out.println("Number of index nodes accessed: " + st.getNumNodeAccess());
             System.out.println("Index nodes accesses:");
             System.out.println(st.getNodeLog());
@@ -63,14 +64,12 @@ public class Main {
 
             // Experiment 5
             st.deleteBPT(1000);
-            System.out.println("\nExperiment 5");
+            System.out.println("\nEXPERIMENT 5");
             System.out.println("Total number of deleted nodes: " + st.getBPT().getTotalNodesDeleted());
             System.out.println("Number of nodes of updated B+ tree: " + st.getBPT().getTotalNodes());
             System.out.println("Height of updated B+ tree: " + st.getBPT().getHeight());
             System.out.println("Content of root node: " + st.getBPT().getRoot());
             System.out.println("Content of first child of root node: " + ((InternalNode)st.getBPT().getRoot()).getPointers()[0]);
-
-            // TODO: Add installation guide for running code
         }
     }
 }

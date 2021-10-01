@@ -56,6 +56,11 @@ public class Util {
         arr[arr.length - 1] = null;
     }
 
+    /**
+     * Get n parameter of B+ tree from block size
+     * @param blockSize size of block in bytes
+     * @return n parameter of B+ tree
+     */
     public static int getNFromBlockSize(int blockSize) {
         return (blockSize - 4) / 18;
     }

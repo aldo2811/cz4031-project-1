@@ -11,7 +11,6 @@ import java.util.Queue;
  * Class representing the B+ tree data structure
  */
 public class BPlusTree {
-    // TODO: Add logs to methods
 
     /**
      * Maximum number of keys in a node
@@ -58,11 +57,15 @@ public class BPlusTree {
      */
     private int totalNodesDeleted;
 
+    /**
+     * Storage, for logging purposes
+     */
     private Storage st;
 
     /**
      * Construct a B+ tree
      * @param n maximum number of keys in a node
+     * @param st storage, for logging purposes
      */
     public BPlusTree(int n, Storage st) {
         this.n = n;
@@ -73,7 +76,6 @@ public class BPlusTree {
         this.minDegreeInternal = (int) Math.floor(n/2.0) + 1;
         this.maxKeysLeaf = n;
         this.minKeysLeaf = (int) Math.floor((n+1) / 2.0);
-
         this.height = 0;
         this.totalNodes = 0;
         this.totalNodesDeleted = 0;
@@ -86,7 +88,7 @@ public class BPlusTree {
      * @return a list of record addresses with a key value equal to the search key
      */
     public List<RecordAddress> search(int searchKey) {
-        // Initialize total node access for experiment
+        // Reset logs for experiment
         st.resetLog();
 
         // Since there could be more than one result for a search key, searching for a single key can be done
@@ -101,7 +103,7 @@ public class BPlusTree {
      * @return a list of record addresses with a key value between the lower and upper bounds
      */
     public List<RecordAddress> search(int lower, int upper) {
-        // Initialize total node access for experiment
+        // Reset logs for experiment
         st.resetLog();
 
         return searchInternal(root, lower, upper);
@@ -122,7 +124,7 @@ public class BPlusTree {
 
             // Iterate through leaf node to find all occurrences of search key
             while (leafNode != null && !finished) {
-                // Increase total number of nodes accessed here, since leaf nodes can be traversed through siblings
+                // Record node access here, since leaf nodes can be traversed through siblings
                 st.logNodeAccess(leafNode);
 
                 KeyValuePair[] kvPairs = leafNode.getKvPairs();
@@ -148,7 +150,7 @@ public class BPlusTree {
         } else if (node instanceof InternalNode) {
             InternalNode curNode = (InternalNode) node;
 
-            // Increase number of node accessed
+            // Record node access
             st.logNodeAccess(curNode);
 
             // Traverse to the leftmost subtree possibly containing the lower bound
