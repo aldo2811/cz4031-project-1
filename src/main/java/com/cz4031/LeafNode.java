@@ -159,8 +159,11 @@ public class LeafNode implements Node {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < degree; ++i) {
+            sb.append("(");
             sb.append(kvPairs[i].getKey().getK1());
-            sb.append("  ");
+            sb.append(", ");
+            sb.append(String.valueOf(kvPairs[i].getKey().getK2()).trim());
+            sb.append(")  ");
         }
         return sb.toString();
     }

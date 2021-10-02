@@ -2,6 +2,7 @@ package com.cz4031;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.StringJoiner;
 
 /**
  * Class representing a block in disk storage
@@ -143,12 +144,10 @@ public class Block {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < records.length; ++i) {
-            sb.append(String.format("Record %d -> ", i));
-            sb.append(records[i]);
-            sb.append("\n");
+        StringJoiner joiner = new StringJoiner(", ", "(", ")");
+        for (Record record : records) {
+            joiner.add(record.toString());
         }
-        return sb.toString();
+        return joiner.toString();
     }
 }
