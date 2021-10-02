@@ -75,7 +75,6 @@ public class Record {
 
     @Override
     public String toString() {
-        return String.format("Empty: %s, tconst: %s, avgRating: %f, numVotes: %d", empty, String.valueOf(tconst).trim(),
-                avgRating, numVotes);
+        return String.valueOf(tconst).trim();
     }
 }

@@ -22,7 +22,7 @@ public class Main {
 
             // Experiment 2
             st.buildIndex();
-            System.out.println("\nEXPERIMENT 2");
+            System.out.println("\n\nEXPERIMENT 2");
             System.out.println("Parameter n of B+ tree: " + st.getBPT().getN());
             System.out.println("Number of nodes in B+ tree: " + st.getBPT().getTotalNodes());
             System.out.println("Height of B+ tree: " + st.getBPT().getHeight());
@@ -31,10 +31,10 @@ public class Main {
 
             // Experiment 3
             List<Record> recordsExpt3 = st.searchBPT(500);
-            System.out.println("\nEXPERIMENT 3");
+            System.out.println("\n\nEXPERIMENT 3");
             System.out.println("Number of index nodes accessed: " + st.getNumNodeAccess());
             System.out.println("Index nodes accesses:");
-            System.out.println(st.getNodeLog());
+            System.out.print(st.getNodeLog());
             System.out.println("Number of block accessed: " + st.getNumBlockAccess());
             System.out.println("Block accessed:");
             System.out.print(st.getBlockLog());
@@ -48,7 +48,7 @@ public class Main {
 
             // Experiment 4
             List<Record> recordsExpt4 = st.searchBPT(30000, 40000);
-            System.out.println("\nEXPERIMENT 4");
+            System.out.println("\n\nEXPERIMENT 4");
             System.out.println("Number of index nodes accessed: " + st.getNumNodeAccess());
             System.out.println("Index nodes accesses:");
             System.out.println(st.getNodeLog());
@@ -64,7 +64,7 @@ public class Main {
 
             // Experiment 5
             st.deleteBPT(1000);
-            System.out.println("\nEXPERIMENT 5");
+            System.out.println("\n\nEXPERIMENT 5");
             System.out.println("Total number of deleted nodes: " + st.getBPT().getTotalNodesDeleted());
             System.out.println("Number of nodes of updated B+ tree: " + st.getBPT().getTotalNodes());
             System.out.println("Height of updated B+ tree: " + st.getBPT().getHeight());

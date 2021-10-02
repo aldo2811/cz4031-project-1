@@ -161,8 +161,11 @@ public class InternalNode implements Node {
         StringBuilder sb = new StringBuilder();
         for (Key k : keys) {
             if (k == null) break;
+            sb.append("(");
             sb.append(k.getK1());
-            sb.append("  ");
+            sb.append(", ");
+            sb.append(String.valueOf(k.getK2()).trim());
+            sb.append(")  ");
         }
         return sb.toString();
     }
