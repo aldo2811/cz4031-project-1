@@ -39,17 +39,19 @@ public class AccessLogger {
 
     public String getNodeAccess() {
         StringBuilder sb = new StringBuilder();
-        for(Node node : nodeList) {
-            sb.append(node);
-            sb.append("||  ");
+        for(int i=0;i<nodeList.size();++i) {
+            sb.append(String.format("%d. ", i+1));
+            sb.append(nodeList.get(i));
+            sb.append("\n");
         }
         return sb.toString();
     }
 
     public String getBlockAccess() {
         StringBuilder sb = new StringBuilder();
-        for(RecordAddress ra : blockList) {
-            sb.append(Block.fromByteArray(st.readBlock(ra.getBlockID()),st.getRecordSize()));
+        for(int i=0;i<blockList.size(); ++i) {
+            sb.append(String.format("%d. ", i+1));
+            sb.append(Block.fromByteArray(st.readBlock(blockList.get(i).getBlockID()),st.getRecordSize()));
             sb.append("\n");
         }
         return sb.toString();
